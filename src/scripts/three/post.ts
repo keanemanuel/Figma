@@ -36,7 +36,9 @@ export function createRenderer(host: HTMLElement, { maxDpr = 2 } = {}) {
   canvas.className = 'gl__canvas';
   canvas.setAttribute('aria-hidden', 'true');
   host.append(canvas);
-  const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: false, premultipliedAlpha: false, powerPreference: 'high-performance' });
+  // Premultiplied alpha (the default): the projection pass writes colour x alpha. Some browsers composite a
+  // non-premultiplied canvas as if it were premultiplied, which shows every faint pixel at full brightness.
+  const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: false, powerPreference: 'high-performance' });
   renderer.setClearColor(0x000000, 0);
   const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
   renderer.setPixelRatio(dpr);
@@ -146,7 +148,8 @@ const fragment = /* glsl */ `
     a *= gap;
     a *= 1.0 - uGrain * 0.22 * hash(gl_FragCoord.xy + tick);
     a *= 1.0 - uGlitch * 0.25 * hash(vec2(tick, 7.0));
-    gl_FragColor = vec4(col, a * uTone);
+    a = clamp(a * uTone, 0.0, 1.0);
+    gl_FragColor = vec4(clamp(col, 0.0, 1.0) * a, a);
   }
 `;
 

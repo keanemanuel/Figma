@@ -94,7 +94,15 @@ function makeBeam() {
   return { mesh, uniforms };
 }
 
-/** One holographic screen: a little interface drawn in light. */
+/**
+ * The glass of a screen. FILL is how much light the pane itself gives off: through the projection pass (alpha
+ * from brightness, plus glow and scanlines) 0.14 comes out about 50% solid on the page. SHADE is how much of the
+ * beam the pane holds back, so the lettering has something darker than itself to sit on.
+ */
+const FILL = 0.14;
+const SHADE = 0.72;
+
+/** One holographic screen: a little interface drawn in light, on a pane that dims the beam behind it. */
 async function makeScreen(kind: 'events' | 'wire' | 'chart', hex: string) {
   await document.fonts.load('40px Michroma').catch(() => {});
   const W = 640;
@@ -104,30 +112,38 @@ async function makeScreen(kind: 'events' | 'wire' | 'chart', hex: string) {
   canvas.height = H;
   const c = canvas.getContext('2d')!;
   const ink = (a: number) => `rgba(255,255,255,${a})`;
-  c.fillStyle = ink(0.1);
+  // Small lettering gets a hairline stroke as well, so it survives the scanlines.
+  const label = (text: string, x: number, y: number) => {
+    c.save();
+    c.lineWidth = 1;
+    c.strokeText(text, x, y);
+    c.restore();
+    c.fillText(text, x, y);
+  };
+  c.fillStyle = ink(FILL);
   c.fillRect(0, 0, W, H);
   c.strokeStyle = ink(0.95);
   c.lineWidth = 3;
   c.strokeRect(1.5, 1.5, W - 3, H - 3);
   // Header bar: brand, nav dots.
-  c.fillStyle = ink(0.22);
+  c.fillStyle = ink(FILL * 0.9);
   c.fillRect(0, 0, W, 54);
-  c.fillStyle = ink(0.95);
-  c.font = '20px Michroma, sans-serif';
+  c.fillStyle = ink(1);
+  c.font = '22px Michroma, sans-serif';
   c.textBaseline = 'middle';
-  c.fillText('CISSA', 22, 28);
+  label('CISSA', 22, 28);
   for (let i = 0; i < 3; i++) c.fillRect(W - 40 - i * 26, 22, 14, 14);
   if (kind === 'events') {
     c.font = '74px Michroma, sans-serif';
     c.fillText('EVENTS', 22, 132);
-    c.font = '18px Michroma, sans-serif';
+    c.font = '22px Michroma, sans-serif';
     for (let i = 0; i < 4; i++) {
       const x = 22 + i * 152;
-      c.fillStyle = ink(0.2);
+      c.fillStyle = ink(FILL * 0.6);
       c.fillRect(x, 200, 138, 150);
       c.strokeRect(x, 200, 138, 150);
-      c.fillStyle = ink(0.95);
-      c.fillText(`0${i + 1}`, x + 12, 224);
+      c.fillStyle = ink(1);
+      label(`0${i + 1}`, x + 12, 226);
       c.fillRect(x + 12, 318, 80, 6);
       c.fillRect(x + 12, 332, 52, 6);
     }
@@ -159,7 +175,7 @@ async function makeScreen(kind: 'events' | 'wire' | 'chart', hex: string) {
     const pts = [330, 300, 250, 270, 190, 210, 120, 150];
     pts.forEach((y, i) => c.lineTo(30 + i * 82, y));
     c.stroke();
-    c.fillStyle = ink(0.16);
+    c.fillStyle = ink(FILL * 0.7);
     c.lineTo(604, 400);
     c.lineTo(30, 400);
     c.fill();
@@ -173,8 +189,15 @@ async function makeScreen(kind: 'events' | 'wire' | 'chart', hex: string) {
   const map = new CanvasTexture(canvas);
   map.colorSpace = SRGBColorSpace;
   map.anisotropy = 4;
-  const material = new MeshBasicMaterial({ map, color: hex, transparent: true, opacity: 0, blending: AdditiveBlending, depthWrite: false, side: DoubleSide });
-  return new Mesh(new PlaneGeometry(W / 180, H / 180), material);
+  const geometry = new PlaneGeometry(W / 180, H / 180);
+  const face = new Mesh(geometry, new MeshBasicMaterial({ map, color: hex, transparent: true, opacity: 0, blending: AdditiveBlending, depthWrite: false, side: DoubleSide }));
+  // Drawn after the beam and before the lettering, whatever the depth: the beam passes in front of the screens too.
+  const shade = new Mesh(geometry, new MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0, depthWrite: false, depthTest: false, side: DoubleSide }));
+  shade.renderOrder = 1;
+  face.renderOrder = 2;
+  const group = new Group();
+  group.add(shade, face);
+  return { group, face: face.material, shade: shade.material };
 }
 
 export async function mountHero(host: HTMLElement, opts: { lite: boolean; maxDpr: number }): Promise<SceneHandle> {
@@ -260,13 +283,16 @@ export async function mountHero(host: HTMLElement, opts: { lite: boolean; maxDpr
   rig.add(globe);
 
   // ---- The screens that rise out of the beam ----
-  const screens = await Promise.all([makeScreen('events', '#7ff0ec'), makeScreen('wire', '#8fd0ff'), makeScreen('chart', '#a79cff')]);
+  const built = await Promise.all([makeScreen('events', '#7ff0ec'), makeScreen('wire', '#8fd0ff'), makeScreen('chart', '#a79cff')]);
   // Where each one ends up: the middle one faces you, the others stand either side, turned in.
   const posed = [
     { x: 0, y: 1.25, z: 0.5, ry: 0, scale: 1 },
     { x: -3.55, y: 1.0, z: -0.5, ry: 0.62, scale: 0.78 },
     { x: 3.55, y: 1.0, z: -0.5, ry: -0.62, scale: 0.78 },
   ];
+  const screens = built.map((b) => b.group);
+  const faces = built.map((b) => b.face);
+  const shades = built.map((b) => b.shade);
   screens.forEach((m) => rig.add(m));
 
   const { renderer, canvas, dpr: startDpr } = createRenderer(stage, { maxDpr: opts.maxDpr });
@@ -410,7 +436,9 @@ export async function mountHero(host: HTMLElement, opts: { lite: boolean; maxDpr
       m.position.set(x * k * (i ? spread : 1), lerp(RIG.puckY + 0.4, to.y + Math.sin(t * 0.9 + i * 2) * 0.05, k), lerp(0, wide ? to.z : to.z - 0.6, k));
       m.rotation.y = to.ry * k;
       m.scale.setScalar(Math.max(0.001, to.scale * k));
-      fade(m.material as Material, i ? 0.7 : 0.95, k * hum * (i ? 1 - zoom : 1));
+      const on = k * (i ? 1 - zoom : 1);
+      fade(faces[i], i ? 0.8 : 1, on * hum);
+      fade(shades[i], SHADE, on);
     });
 
     // A hologram: now and then the projection drops a few rows. It slips more when you scroll fast.
