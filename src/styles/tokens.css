@@ -1,0 +1,95 @@
+/*
+ * Design tokens, read from the Figma file. Themes switch with data-theme on
+ * <body> (or on any element that should be inked in an event's colours).
+ *   base   home + general brand (teal on near-black)
+ *   thon   Product-thon (arcade: teal + coin yellow)
+ *   blitz  Design Blitz (violet)
+ *   folio  Portfolio Impressions (teal + serif)
+ *   lab    Figma Workshops (light canvas)
+ */
+@property --c-primary { syntax: '<color>'; inherits: true; initial-value: #00c3d0; }
+@property --c-accent { syntax: '<color>'; inherits: true; initial-value: #8b7bff; }
+@property --c-glow { syntax: '<color>'; inherits: true; initial-value: rgba(0, 195, 208, 0.28); }
+
+:root,
+[data-theme='base'] {
+  --c-bg: #0b0c0e;
+  --c-surface: #14161a;
+  --c-surface-2: #1c1f24;
+  --c-line: rgba(255, 255, 255, 0.07);
+  --c-text: #edeff2;
+  --c-title: #d9d9d9;
+  --c-muted: #b9bec6;
+  --c-dim: #7c838c;
+  --c-primary: #00c3d0;
+  --c-accent: #8b7bff;
+  --c-glow: rgba(0, 195, 208, 0.28);
+  --c-btn: #00c3d0;
+  --c-btn-text: #050607;
+  --c-tag: #5fe3e0;
+  --c-warn: #ffd34d;
+  --c-hot: #ff6b4a;
+  --c-split-a: #ff3b6b;
+  --c-split-b: #22e0ff;
+}
+[data-theme='thon'] {
+  --c-primary: #5fe3e0;
+  --c-accent: #ffd34d;
+  --c-glow: rgba(95, 227, 224, 0.26);
+  --c-btn: #5fe3e0;
+  --c-tag: #5fe3e0;
+}
+[data-theme='blitz'] {
+  --c-bg: #0d0c18;
+  --c-surface: #15142a;
+  --c-surface-2: #1d1b3a;
+  --c-primary: #b3a6ff;
+  --c-accent: #5fe3e0;
+  --c-glow: rgba(139, 123, 255, 0.34);
+  --c-btn: #b3a6ff;
+  --c-tag: #b3a6ff;
+}
+[data-theme='folio'] {
+  --c-primary: #5fe3e0;
+  --c-accent: #8b7bff;
+  --c-glow: rgba(95, 227, 224, 0.2);
+  --c-btn: #5fe3e0;
+  --c-tag: #5fe3e0;
+}
+[data-theme='lab'] {
+  --c-bg: #f4f4f2;
+  --c-surface: #ffffff;
+  --c-surface-2: #eef0ec;
+  --c-line: rgba(11, 12, 14, 0.09);
+  --c-text: #0b0c0e;
+  --c-title: #0b0c0e;
+  --c-muted: #3d4249;
+  --c-dim: #6b7078;
+  --c-primary: #1a8f8c;
+  --c-accent: #2b8cff;
+  --c-glow: rgba(43, 140, 255, 0.16);
+  --c-btn: #0b0c0e;
+  --c-btn-text: #f4f4f2;
+  --c-tag: #0b0c0e;
+}
+
+:root {
+  --ff-display: 'Michroma', 'Arial Black', sans-serif;
+  --ff-nav: 'Unbounded', 'Michroma', sans-serif;
+  --ff-body: 'Montserrat', system-ui, sans-serif;
+  --ff-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+  --ff-pixel: 'Press Start 2P', 'JetBrains Mono', monospace;
+  --ff-serif: 'Instrument Serif', Georgia, serif;
+  --ff-hand: 'Caveat', 'Comic Sans MS', cursive;
+  /* 120px side margin on the 1728px Figma frame. */
+  --pad: clamp(1.25rem, 6.94vw, 7.5rem);
+  --nav-h: 5.5rem;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* --ink: the one colour that stands for an event wherever it appears outside its own page (picker, hero icons, pills). */
+:root { --ink: #00c3d0; }
+[data-theme='thon'] { --ink: #5fe3e0; }
+[data-theme='blitz'] { --ink: #b3a6ff; }
+[data-theme='folio'] { --ink: #edeff2; }
+[data-theme='lab'] { --ink: #2b8cff; }

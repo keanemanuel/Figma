@@ -1,0 +1,307 @@
+/* ---------- Canvas shared by every WebGL block ---------- */
+.gl__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; opacity: 0; transition: opacity 0.6s ease; }
+.is-live > * > .gl__canvas, .is-live .gl__canvas { opacity: 1; }
+@keyframes cue-bob { 50% { transform: translateY(5px); } }
+
+/* ---------- Home hero (components/home/HomeHero.astro) ----------
+ * Static: the Figma hero, with a CSS orb. .is-3d (motion on + WebGL, set by
+ * scripts/three/loader.ts) pins the stage for a long scroll; the scene writes
+ * --p (0..1) and the overlay fades on it.
+ */
+.hero { position: relative; --p: 0; }
+.hero__stage {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: calc(var(--nav-h) + 1rem) var(--pad) clamp(3rem, 9vh, 6rem);
+  overflow: hidden;
+}
+.hero.is-3d { height: 360vh; }
+.hero.is-3d .hero__stage { position: sticky; top: 0; height: 100vh; height: 100svh; will-change: transform; }
+.hero__glow { position: absolute; inset: 0; pointer-events: none; background:
+  radial-gradient(ellipse 46% 60% at 12% 48%, rgba(0, 195, 208, 0.33), transparent 70%),
+  radial-gradient(ellipse 50% 70% at 88% 82%, rgba(110, 86, 207, 0.34), transparent 70%); }
+.hero.is-3d .hero__glow { opacity: calc(1 - var(--p) * 0.5); }
+.hero__copy { position: relative; z-index: 2; display: flex; flex-direction: column; gap: clamp(0.9rem, 2.2vh, 1.75rem); max-width: min(100%, 62rem); }
+.hero.is-3d .hero__copy {
+  opacity: clamp(0, calc(1 - (var(--p) - 0.06) * 9), 1);
+  transform: translateY(calc(var(--p) * -160px));
+}
+.hero.is-scrolled .hero__copy { visibility: hidden; }
+.hero__title .outline { -webkit-text-stroke-width: 0.022em; }
+.hero__actions { display: flex; flex-wrap: wrap; gap: clamp(0.75rem, 2vw, 2.2rem); margin-top: clamp(0.5rem, 2vh, 1.5rem); }
+
+/* The orb, as drawn in Figma: core, two rings, four event tags in orbit. */
+.orb {
+  position: absolute;
+  z-index: 1;
+  right: -4vw;
+  top: 9%;
+  width: 62vw;
+  aspect-ratio: 1;
+  container-type: size;
+  pointer-events: none;
+  opacity: 0.55;
+}
+.orb__ring { position: absolute; border-radius: 50%; }
+.orb__ring--outer { inset: 8.33%; border: 1px dashed color-mix(in srgb, var(--c-tag) 45%, transparent); }
+.orb__ring--inner { inset: 20%; border: 1px solid color-mix(in srgb, var(--c-accent) 75%, transparent); }
+.orb__glow { position: absolute; inset: 21.67%; border-radius: 50%; background: radial-gradient(circle, rgba(95, 227, 224, 0.34), transparent 68%); }
+.orb__core {
+  position: absolute;
+  inset: 33.33%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #9ff5ee 0, #2bb8ae 38%, #0f6f6c 78%, #0a4a4c 100%);
+  box-shadow: 0 0 60px rgba(95, 227, 224, 0.35);
+}
+.orb__core::after { content: ''; position: absolute; left: 16%; right: 16%; top: 11%; height: 3.5%; border-radius: 99px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.85), transparent); }
+.orb__orbit { position: absolute; inset: 0; }
+html[data-motion='on'] .orb__orbit { animation: orbit 70s linear infinite; }
+html[data-motion='on'] .orb__ring--outer { animation: orbit 120s linear infinite reverse; }
+@keyframes orbit { to { transform: rotate(360deg); } }
+.orb__tag {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  padding: 0.5em 1.4em;
+  border: 1px solid var(--tc, var(--c-tag));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--c-bg) 86%, transparent);
+  color: var(--tc, var(--c-tag));
+  font-family: var(--ff-mono);
+  font-size: clamp(0.5rem, 2cqw, 0.75rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transform: translate(-50%, -50%) rotate(var(--a)) translateY(-41.67cqw);
+}
+.hero.is-3d .orb { visibility: hidden; }
+.hero.is-scrolled .orb__orbit, .hero.is-scrolled .orb__ring--outer { animation-play-state: paused; }
+@media (min-width: 900px) {
+  .hero__stage { justify-content: center; padding-bottom: clamp(2rem, 6vh, 5rem); }
+  .orb { right: 4.5vw; top: 50%; width: min(34.7vw, 62svh); margin-top: calc(min(34.7vw, 62svh) / -2 + 1.5vh); opacity: 1; }
+  .hero.is-3d .orb { width: min(36vw, 74svh); margin-top: calc(min(36vw, 74svh) / -2 + 3vh); }
+}
+
+/* Live overlay: the flight's caption, then white-out and dark, which hands the page to the picker. */
+.hero__hud, .hero__flash, .hero__dark, .hero__cue { display: none; }
+.hero.is-3d .hero__hud {
+  display: block;
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: 5vh;
+  text-align: center;
+  font-family: var(--ff-pixel);
+  font-size: clamp(0.55rem, 0.9vw, 0.8rem);
+  color: var(--c-primary);
+  opacity: min(clamp(0, calc((var(--p) - 0.5) * 12), 1), clamp(0, calc((0.86 - var(--p)) * 12), 1));
+  pointer-events: none;
+}
+.hero.is-3d .hero__flash, .hero.is-3d .hero__dark { display: block; position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.hero.is-3d .hero__flash {
+  background: radial-gradient(circle at 50% 50%, #fff 0, #bff7f4 18%, var(--c-primary) 42%, transparent 72%);
+  opacity: clamp(0, calc((var(--p) - 0.76) * 7), 1);
+  transform: scale(calc(0.2 + clamp(0, (var(--p) - 0.76) * 5, 1) * 2.6));
+}
+.hero.is-3d .hero__dark { background: var(--c-bg); opacity: clamp(0, calc((var(--p) - 0.92) * 14), 1); }
+.hero.is-3d .hero__cue {
+  display: block;
+  position: absolute;
+  z-index: 2;
+  right: var(--pad);
+  bottom: 2rem;
+  font-family: var(--ff-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--c-dim);
+  opacity: clamp(0, calc(1 - var(--p) * 10), 1);
+}
+.hero__cue span { display: inline-block; animation: cue-bob 1.6s ease-in-out infinite; color: var(--c-primary); }
+.hero.is-scrolled .hero__cue { visibility: hidden; }
+.hero.is-scrolled .hero__cue span { animation: none; }
+
+/* ---------- Event picker (components/home/EventPicker.astro) ----------
+ * Static: the Figma bento grid in normal flow. .is-pinned (desktop + motion,
+ * scripts/motion/picker.ts): the stage sticks and scrolling moves the
+ * selection 01 -> 04; the stage re-inks in the selected event's colours.
+ */
+.picker { position: relative; --n: 4; scroll-margin-top: 0; }
+.picker__stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2.4vh, 1.75rem);
+  padding: calc(var(--nav-h) + 1.5rem) var(--pad) 2.5rem;
+}
+.picker__glow { position: absolute; inset: 0 0 auto; height: 60%; pointer-events: none; background: radial-gradient(ellipse 45% 55% at 50% 0%, var(--c-glow), transparent 75%); }
+.picker__head { position: relative; display: grid; gap: 1rem 3rem; align-items: end; }
+.picker__head .display { font-size: clamp(2rem, 4.4vw, 4.75rem); text-transform: none; color: var(--c-text); }
+.picker__head .lead { font-size: clamp(0.95rem, 1.04vw, 1.125rem); line-height: 1.75; color: var(--c-muted); max-width: 27em; }
+.picker__grid { position: relative; display: grid; gap: clamp(0.75rem, 1.4vw, 1.5rem); perspective: 1600px; }
+.picker__hud { display: none; }
+@media (min-width: 900px) {
+  .picker__head { grid-template-columns: 1fr auto; }
+  .picker__grid { grid-template-columns: repeat(24, 1fr); grid-auto-rows: minmax(15rem, 1fr); }
+  .pcard:nth-child(1), .pcard:nth-child(4) { grid-column: span 14; }
+  .pcard:nth-child(2), .pcard:nth-child(3) { grid-column: span 10; }
+  .picker.is-pinned { height: calc(100vh + var(--n) * 62vh); }
+  .picker.is-pinned .picker__stage { position: sticky; top: 0; height: 100vh; height: 100svh; padding-bottom: 3.25rem; will-change: transform; }
+  .picker.is-pinned .picker__grid { flex: 1; min-height: 0; grid-auto-rows: minmax(0, 1fr); }
+  .picker.is-pinned .picker__hud {
+    position: absolute;
+    left: var(--pad);
+    right: var(--pad);
+    bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--ff-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--c-dim);
+  }
+}
+.picker__pips { display: flex; gap: 0.5rem; }
+.picker__pips li { position: relative; width: 3.2rem; padding-top: 0.5rem; color: var(--c-dim); transition: color 0.3s ease; }
+.picker__pips li::before, .picker__pips li::after { content: ''; position: absolute; left: 0; top: 0; height: 2px; width: 100%; background: var(--c-line); }
+.picker__pips li::after { background: var(--c-primary); transform: scaleX(var(--fill, 0)); transform-origin: left; }
+.picker__pips li.is-on { color: var(--c-primary); }
+.picker__hint kbd { font: inherit; padding: 0.15em 0.5em; border: 1px solid currentColor; border-radius: 4px; color: var(--c-primary); }
+
+.pcard {
+  position: relative;
+  display: block;
+  min-height: 16rem;
+  border-radius: clamp(1rem, 1.6vw, 1.75rem);
+  transform-style: preserve-3d;
+  transition: opacity 0.45s ease, filter 0.45s ease, transform 0.5s var(--ease-out);
+}
+.pcard__in {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: clamp(1rem, 2.1vw, 2.25rem);
+  border-radius: inherit;
+  border: 1px solid color-mix(in srgb, var(--c-primary) 34%, transparent);
+  background: var(--card-bg, var(--c-surface));
+  color: var(--c-text);
+  overflow: hidden;
+  transition: box-shadow 0.45s ease, border-color 0.45s ease;
+}
+/* Glare that follows the pointer (--gx/--gy from effects.ts). */
+.pcard__in::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle 22rem at var(--gx, 50%) var(--gy, -40%), color-mix(in srgb, var(--c-primary) 22%, transparent), transparent 70%); opacity: 0; transition: opacity 0.4s ease; }
+.pcard:hover .pcard__in::after, .pcard.is-focus .pcard__in::after { opacity: 1; }
+.pcard__num { position: absolute; left: clamp(1rem, 2.1vw, 2.25rem); top: clamp(0.4rem, 1vw, 1rem); font-family: var(--ff-display); font-size: clamp(3.2rem, 6.4vw, 6.9rem); line-height: 1; letter-spacing: -0.04em; color: transparent; -webkit-text-stroke: 1px color-mix(in srgb, var(--c-primary) 75%, transparent); }
+.pcard__name { font-family: var(--ff-display); font-size: clamp(1.25rem, 2.7vw, 3rem); line-height: 1.05; letter-spacing: -0.02em; text-transform: uppercase; }
+.pcard__text { font-size: clamp(0.82rem, 0.98vw, 1.0625rem); color: var(--c-muted); padding-right: 5.5rem; }
+.pcard .tags { margin-bottom: 0.2rem; }
+.pcard .tag { font-size: clamp(0.68rem, 0.8vw, 0.875rem); }
+.pcard__enter { position: absolute; right: clamp(1rem, 2.1vw, 2.25rem); bottom: clamp(1rem, 2.1vw, 2.25rem); font-family: var(--ff-pixel); font-size: 0.6rem; color: var(--c-primary); opacity: 0; transform: translateX(-8px); transition: opacity 0.3s ease, transform 0.3s var(--ease-out); }
+.pcard.is-focus .pcard__enter, .pcard:hover .pcard__enter { opacity: 1; transform: none; }
+.picker.has-focus .pcard:not(.is-focus):not(:hover) { opacity: 0.4; filter: saturate(0.5); }
+.pcard.is-focus { transform: translateY(-4px) scale(1.012); z-index: 2; }
+.pcard.is-focus .pcard__in, .pcard:hover .pcard__in { border-color: var(--c-primary); box-shadow: 0 0 0 1px var(--c-primary), 0 26px 80px -24px var(--c-glow), 0 0 46px -10px var(--c-glow); }
+/* Card art only moves while its card is selected or hovered. */
+.pcard [data-art] *, .pcard [data-art] { animation-play-state: paused; }
+.pcard.is-focus [data-art] *, .pcard:hover [data-art] *, .pcard.is-focus [data-art], .pcard:hover [data-art] { animation-play-state: running; }
+
+/* 01 Product-thon: pixel grid + PRESS START */
+.pcard--thon { --card-bg: #0f1a19; }
+.pcard--thon .pcard__art { position: absolute; inset: 0; background:
+  linear-gradient(rgba(95, 227, 224, 0.13) 1px, transparent 1px) 0 0 / 22px 22px,
+  linear-gradient(90deg, rgba(95, 227, 224, 0.13) 1px, transparent 1px) 0 0 / 22px 22px; animation: grid-run 1.2s linear infinite; }
+@keyframes grid-run { to { background-position: 0 22px, -22px 0; } }
+.pcard__press { position: absolute; right: clamp(1rem, 2.3vw, 2.5rem); top: clamp(1rem, 2.2vw, 2.4rem); font-family: var(--ff-pixel); font-size: clamp(0.7rem, 1.2vw, 1.25rem); line-height: 1.8; text-align: right; color: var(--c-primary); text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5); }
+.pcard__press b { font-weight: 400; animation: caret 0.8s steps(1) infinite; }
+.pcard__hop { position: absolute; right: 9%; bottom: 30%; width: 1.4rem; height: 1.8rem; background: linear-gradient(#ff6b4a 50%, #5fe3e0 50%); outline: 3px solid #0b0c0e; animation: hop 0.7s cubic-bezier(0.3, 0, 0.7, 1) infinite alternate; }
+@keyframes hop { to { transform: translateY(-2.6rem); } }
+/* 02 Design Blitz: timer ring */
+.pcard--blitz { --card-bg: #15142a; }
+.pcard__ring { position: absolute; right: -8%; top: -32%; width: 46%; aspect-ratio: 1; border-radius: 50%; border: clamp(1rem, 2vw, 2.2rem) solid rgba(139, 123, 255, 0.22); border-top-color: rgba(179, 166, 255, 0.75); animation: orbit 3s linear infinite; }
+.pcard__timer { position: absolute; right: clamp(1rem, 2.3vw, 2.5rem); top: 32%; font-family: var(--ff-mono); font-size: clamp(1rem, 1.6vw, 1.75rem); letter-spacing: 0.06em; color: var(--c-primary); }
+/* 03 Portfolio: a fan of cards */
+.pcard--folio { --card-bg: #16171b; }
+.pcard--folio .pcard__num { left: auto; right: clamp(1rem, 2.1vw, 2.25rem); top: clamp(1rem, 2vw, 2rem); font-size: clamp(2.6rem, 4.8vw, 5.2rem); -webkit-text-stroke-color: rgba(237, 239, 242, 0.6); }
+.pcard__fan { position: absolute; left: 9%; top: 9%; width: 42%; height: 46%; }
+.pcard__fan i { position: absolute; inset: 0 30% 0 0; border-radius: 0.8rem; background: #2c3038; transform: rotate(-9deg); transform-origin: 20% 120%; animation: fan-a 1.6s var(--ease-out) infinite alternate; }
+.pcard__fan i:nth-child(2) { background: #3b414b; animation-name: fan-b; }
+.pcard__fan i:nth-child(3) { background: linear-gradient(135deg, #5fe3e0, #8b7bff); animation-name: fan-c; box-shadow: 0 12px 40px rgba(95, 227, 224, 0.25); }
+@keyframes fan-a { from { transform: rotate(-4deg); } to { transform: rotate(-16deg) translateX(-8%); } }
+@keyframes fan-b { from { transform: rotate(-1deg) translateX(12%); } to { transform: rotate(-4deg) translateX(22%); } }
+@keyframes fan-c { from { transform: rotate(3deg) translateX(26%); } to { transform: rotate(9deg) translateX(52%) translateY(-6%); } }
+/* 04 Figma Workshops: live canvas */
+.pcard--lab .pcard__in { background: #f4f4f2 radial-gradient(circle, rgba(11, 12, 14, 0.14) 1px, transparent 1.5px) 0 0 / 22px 22px; border-color: rgba(11, 12, 14, 0.12); }
+.pcard--lab .pcard__num { -webkit-text-stroke-color: rgba(11, 12, 14, 0.55); }
+.pcard__frame { position: absolute; right: 11%; top: 15%; width: 35%; height: 44%; border: 1.5px solid #2b8cff; animation: frame-size 2.4s var(--ease-out) infinite alternate; }
+.pcard__frame::before { content: attr(data-label); position: absolute; left: 0; bottom: calc(100% + 0.4rem); font-family: var(--ff-mono); font-size: 0.68rem; color: #2b8cff; white-space: nowrap; }
+.pcard__frame i { position: absolute; width: 9px; height: 9px; background: #fff; border: 1.5px solid #2b8cff; }
+.pcard__frame i:nth-child(1) { left: -5px; top: -5px; } .pcard__frame i:nth-child(2) { right: -5px; top: -5px; }
+.pcard__frame i:nth-child(3) { left: -5px; bottom: -5px; } .pcard__frame i:nth-child(4) { right: -5px; bottom: -5px; }
+@keyframes frame-size { from { width: 35%; height: 44%; } to { width: 27%; height: 52%; } }
+.mcursor { position: absolute; display: inline-flex; align-items: flex-start; pointer-events: none; --cc: #ff6b4a; }
+.mcursor svg { width: 17px; height: 18px; flex: none; }
+.mcursor svg path { fill: var(--cc); }
+.mcursor span { margin: 14px 0 0 -2px; padding: 0.2em 0.75em; border-radius: 999px; background: var(--cc); color: #fff; font-weight: 700; font-size: 0.72rem; line-height: 1.4; white-space: nowrap; }
+.pcard .mcursor--you { left: 41%; top: 44%; animation: mc-a 3.2s ease-in-out infinite alternate; }
+.pcard .mcursor--mentor { --cc: #8b7bff; left: 84%; top: 68%; animation: mc-b 2.6s ease-in-out infinite alternate; }
+@keyframes mc-a { to { transform: translate(8rem, -3rem); } }
+@keyframes mc-b { to { transform: translate(-5rem, -6rem); } }
+
+/* ---------- Closing call to action (components/home/JoinCta.astro) ---------- */
+.cta { position: relative; z-index: 1; min-height: 100vh; min-height: 100svh; display: grid; place-items: center; padding: 6rem var(--pad) 9rem; text-align: center; overflow: hidden; background: var(--c-bg); }
+.cta__rings { position: absolute; left: 50%; top: 50%; width: min(120vw, 1300px); aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none; }
+.cta__rings i { position: absolute; inset: 0; border: 1px solid rgba(255, 255, 255, 0.13); border-radius: 50%; }
+.cta__rings i:nth-child(2) { inset: 18%; }
+.cta__rings i:nth-child(3) { inset: 34%; background: radial-gradient(circle, rgba(0, 195, 208, 0.3), transparent 68%); border-color: transparent; }
+.cta__rings i:nth-child(4), .cta__rings i:nth-child(5) { border-color: color-mix(in srgb, var(--c-primary) 60%, transparent); opacity: 0; }
+html[data-motion='on'] .cta__rings i:nth-child(4), html[data-motion='on'] .cta__rings i:nth-child(5) { animation: sonar 4s var(--ease-out) infinite; }
+html[data-motion='on'] .cta__rings i:nth-child(5) { animation-delay: 2s; }
+@keyframes sonar { from { transform: scale(0.12); opacity: 0.9; } to { transform: scale(1); opacity: 0; } }
+.cta__inner { position: relative; z-index: 2; display: grid; justify-items: center; gap: clamp(0.75rem, 2vh, 1.5rem); }
+.cta__brand { display: flex; align-items: center; gap: 0.75rem; font-family: var(--ff-display); font-size: clamp(1.2rem, 1.74vw, 1.875rem); letter-spacing: -0.03em; color: var(--c-title); }
+.cta__brand img { width: 2.75rem; }
+.cta .display { font-size: clamp(2rem, 5.55vw, 6rem); }
+.cta .lead { max-width: 17em; margin-top: 0.5rem; }
+.cta__socials { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem 2.5rem; margin-top: 1.5rem; font-family: var(--ff-mono); font-size: clamp(0.8rem, 1.16vw, 1.25rem); letter-spacing: 0.06em; text-transform: uppercase; color: color-mix(in srgb, var(--c-text) 62%, transparent); }
+.cta__socials a { transition: color 0.25s ease; }
+.cta__socials a:hover { color: var(--c-primary); }
+/* Physics pit: tag pills that fall in and can be grabbed and thrown (scripts/motion/physics.ts). */
+.cta__pit { display: none; }
+.cta__pit.is-live { display: block; position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.pill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 0.6em 1.2em;
+  border-radius: 999px;
+  border: 1px solid var(--pc, var(--c-primary));
+  background: color-mix(in srgb, var(--c-bg) 82%, var(--pc, var(--c-primary)));
+  color: var(--pc, var(--c-primary));
+  font-family: var(--ff-mono);
+  font-size: clamp(0.72rem, 0.95vw, 0.95rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  will-change: transform;
+}
+.pill--solid { background: var(--pc, var(--c-primary)); color: #0b0c0e; font-family: var(--ff-body); font-weight: 700; text-transform: none; letter-spacing: 0; }
+.pill.is-held { box-shadow: 0 0 30px var(--pc, var(--c-primary)); }
+.cta__hint { position: absolute; left: var(--pad); bottom: 1.25rem; z-index: 2; font-family: var(--ff-mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--c-dim); }
+.cta__hint::before { content: '↓ '; color: var(--c-primary); }
+.pcard__art { position: absolute; inset: 0; pointer-events: none; }
+.pcard__in > .tags, .pcard__in > .pcard__name, .pcard__in > .pcard__text { position: relative; }
+.hero__stage, .ev3d__stage { touch-action: pan-y; }

@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HomeHero from '../components/home/HomeHero.astro';
+import EventPicker from '../components/home/EventPicker.astro';
+import JoinCta from '../components/home/JoinCta.astro';
+import SignalRule from '../components/ui/SignalRule.astro';
+---
+
+<BaseLayout theme="base" plate="home">
+  <HomeHero />
+  <SignalRule />
+  <EventPicker />
+  <SignalRule />
+  <JoinCta />
+</BaseLayout>

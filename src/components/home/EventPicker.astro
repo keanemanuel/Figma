@@ -1,0 +1,68 @@
+---
+/**
+ * "Pick your event": the Figma bento grid. Static: four cards in normal flow.
+ * On desktop with motion on (scripts/motion/picker.ts) the stage pins and
+ * scrolling moves the selection 01 -> 04: the selected card lifts, its art
+ * plays, the stage re-inks in its colour. Enter (or a click) opens it.
+ */
+import { site, events, eventHref } from '../../lib/content';
+import MCursor from '../ui/MCursor.astro';
+
+const p = site.picker;
+---
+
+<section id="events" class="picker" data-picker style={`--n:${events.length}`} aria-labelledby="picker-title">
+  <div class="picker__stage" data-picker-stage>
+    <div class="picker__glow"></div>
+    <header class="picker__head">
+      <div>
+        <p class="kicker" data-reveal="decode">{p.kicker}</p>
+        <h2 id="picker-title" class="display" data-reveal="glitch"><span>{p.title}</span><span class="outline">{p.outline}</span></h2>
+      </div>
+      <p class="lead" data-reveal="fade-up">{p.lead}</p>
+    </header>
+
+    <div class="picker__grid" data-reveal="flip" data-reveal-children data-reveal-stagger="0.1">
+      {
+        events.map((e) => (
+          <a class:list={['pcard', `pcard--${e.id}`]} href={eventHref(e)} data-theme={e.theme} data-pcard data-tilt data-cursor="Enter">
+            <div class="pcard__in">
+              <div class="pcard__art" data-art aria-hidden="true">
+                {e.id === 'thon' && (
+                  <Fragment>
+                    <i class="pcard__hop" />
+                    <span class="pcard__press">PRESS<br />START<b>_</b></span>
+                  </Fragment>
+                )}
+                {e.id === 'blitz' && (
+                  <Fragment>
+                    <i class="pcard__ring" />
+                    <span class="pcard__timer" data-countdown>[48:00:00]</span>
+                  </Fragment>
+                )}
+                {e.id === 'folio' && <div class="pcard__fan"><i /><i /><i /></div>}
+                {e.id === 'lab' && (
+                  <Fragment>
+                    <div class="pcard__frame" data-label="Frame 1 · 300 × 150"><i /><i /><i /><i /></div>
+                    <MCursor who="you" label="You" />
+                    <MCursor who="mentor" label="Mentor" />
+                  </Fragment>
+                )}
+              </div>
+              <span class="pcard__num" aria-hidden="true">{e.number}</span>
+              {e.tags.length > 0 && <ul class="tags">{e.tags.map((t) => <li class="tag">{t}</li>)}</ul>}
+              <h3 class="pcard__name">{e.name}</h3>
+              <p class="pcard__text">{e.card}</p>
+              <span class="pcard__enter" aria-hidden="true">ENTER ▶</span>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+
+    <div class="picker__hud" aria-hidden="true">
+      <ol class="picker__pips">{events.map((e) => <li data-pip>{e.number}</li>)}</ol>
+      <p class="picker__hint">Scroll to select · <kbd>Enter</kbd> to open</p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,36 @@
+---
+/**
+ * Closing call to action (Figma frame 7). The rings pulse like sonar. With
+ * motion on, tag pills from every event drop into the section and pile up at
+ * the bottom: grab one with the mouse or a finger and throw it
+ * (scripts/motion/physics.ts). Decoration only: hidden without JS.
+ */
+import { site, events } from '../../lib/content';
+
+const c = site.cta;
+const pills = events.flatMap((e) => [
+  ...e.tags.map((label) => ({ label, theme: e.theme, solid: true })),
+  ...e.steps.map((s) => ({ label: s.title, theme: e.theme, solid: false })),
+]);
+// One pill per label.
+const unique = pills.filter((p, i) => pills.findIndex((q) => q.label === p.label) === i);
+---
+
+<section class="cta" id="join" aria-labelledby="cta-title">
+  <div class="cta__rings" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="cta__inner">
+    <p class="cta__brand"><img src="/logo.svg" alt="" width="44" height="42" /> {site.name}</p>
+    <p class="kicker" data-reveal="decode">{c.kicker}</p>
+    <h2 id="cta-title" class="display" data-reveal="glitch" data-reveal-children data-reveal-stagger="0.12">
+      <span>{c.title}</span>
+      {c.outline.map((line, i) => <span><span class="outline">{line}</span>{i === c.outline.length - 1 && <span class="mark">{c.mark}</span>}</span>)}
+    </h2>
+    <p class="lead" data-reveal="fade-up">{c.lead}</p>
+    <a class="btn" href={site.joinUrl} data-magnetic data-cursor="Join" data-reveal="fade-up"><span>{site.joinLabel} <i class="arrow">→</i></span></a>
+    <ul class="cta__socials">{site.socials.map((s) => <li><a href={s.href}>{s.label}</a></li>)}</ul>
+  </div>
+  <div class="cta__pit" data-physics aria-hidden="true">
+    {unique.map((p) => <span class:list={['pill', { 'pill--solid': p.solid }]} data-theme={p.theme} data-pill data-drag data-cursor="Grab" style="--pc: var(--ink)">{p.label}</span>)}
+    <p class="cta__hint">{c.physicsHint}</p>
+  </div>
+</section>

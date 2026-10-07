@@ -1,0 +1,101 @@
+---
+/**
+ * Boot screen: a terminal that boots the site while a radar sweeps over the
+ * logo. Shown on hard loads only (see MotionHead.astro):
+ *   boot    first page of a visit: full log, at least MIN_BOOT ms
+ *   resync  reloads: one line, at least MIN_RESYNC ms
+ * Behind it the 3D scene builds (scripts/three/loader.ts fires gl:settled).
+ * It leaves when the scene, the fonts and the page are ready, never later than
+ * MAX_MS, and any tap, click or key skips it. It leaves through opening blinds.
+ */
+import { site } from '../../lib/content';
+---
+
+<div class="loader" aria-hidden="true" data-boot={JSON.stringify(site.boot)} data-resync={JSON.stringify(site.resync)}>
+  <div class="loader__grid"></div>
+  <div class="loader__core">
+    <div class="loader__radar">
+      <i></i><i></i><i></i>
+      <div class="loader__sweep"></div>
+      <img class="loader__logo" src="/logo.svg" alt="" width="44" height="42" />
+    </div>
+    <ol class="loader__log" data-loader-log></ol>
+    <div class="loader__bar"><i data-loader-bar></i></div>
+    <p class="loader__row"><span>{site.name} · product</span><span class="loader__pct"><span data-loader-pct>000</span>%</span></p>
+  </div>
+</div>
+
+<script>
+  const MIN_BOOT = 2000;
+  const MIN_RESYNC = 750;
+  const MAX_MS = 4500;
+  const OUT_MS = 750;
+
+  const d = document.documentElement;
+  const el = document.querySelector<HTMLElement>('.loader');
+  if (d.dataset.loading === 'on' && el) {
+    const boot = d.dataset.loadingKind !== 'resync';
+    const min = boot ? MIN_BOOT : MIN_RESYNC;
+    const lines: string[] = JSON.parse((boot ? el.dataset.boot : el.dataset.resync) || '[]');
+    const log = el.querySelector<HTMLElement>('[data-loader-log]')!;
+    const bar = el.querySelector<HTMLElement>('[data-loader-bar]')!;
+    const pct = el.querySelector<HTMLElement>('[data-loader-pct]')!;
+    const start = performance.now();
+    let ready = false;
+    let done = false;
+
+    // The log types itself line by line across the minimum time.
+    const perLine = (min * 0.8) / Math.max(lines.length, 1);
+    const items = lines.map((text) => {
+      const li = document.createElement('li');
+      li.hidden = true;
+      log.append(li);
+      return { li, text };
+    });
+    let raf = 0;
+    const tick = () => {
+      const t = performance.now() - start;
+      items.forEach(({ li, text }, i) => {
+        const local = (t - i * perLine) / (perLine * 0.7);
+        if (local <= 0) return;
+        li.hidden = false;
+        const shown = Math.min(text.length, Math.floor(local * text.length));
+        if (li.textContent !== text.slice(0, shown)) li.textContent = text.slice(0, shown);
+        li.classList.toggle('is-typing', local < 1);
+        li.classList.toggle('is-done', local >= 1);
+      });
+      // Progress creeps to 92% on time alone, and only completes when things are really ready.
+      const v = ready ? 1 : Math.min(0.92, t / min);
+      bar.style.setProperty('--v', v.toFixed(3));
+      pct.textContent = String(Math.round(v * 100)).padStart(3, '0');
+      if (!done) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+
+    const finish = () => {
+      if (done) return;
+      ready = done = true;
+      cancelAnimationFrame(raf);
+      bar.style.setProperty('--v', '1');
+      pct.textContent = '100';
+      try {
+        sessionStorage.setItem('cissa-booted', '1');
+      } catch {}
+      d.dataset.loading = 'out';
+      setTimeout(() => delete d.dataset.loading, OUT_MS);
+    };
+
+    const after = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+    const loaded = document.readyState === 'complete' ? Promise.resolve() : new Promise<void>((r) => addEventListener('load', () => r(), { once: true }));
+    const scenes = (window as any).__glSettled || !document.querySelector('[data-gl]') ? Promise.resolve() : new Promise<void>((r) => document.addEventListener('gl:settled', () => r(), { once: true }));
+    const all = Promise.all([loaded, document.fonts.ready, scenes]).then(() => {
+      ready = true;
+      return after(Math.max(180, min - (performance.now() - start)));
+    });
+    Promise.race([all, after(MAX_MS)]).then(finish);
+
+    // Never hold anyone up.
+    addEventListener('pointerdown', finish, { once: true });
+    addEventListener('keydown', finish, { once: true });
+  }
+</script>

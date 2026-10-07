@@ -1,0 +1,35 @@
+---
+/**
+ * Runs before first paint and sets <html data-motion="on|off">.
+ * Motion is off when the visitor prefers reduced motion, or turned it off with
+ * the footer toggle (localStorage cissa-motion=off|on). Nothing is hidden
+ * here: reveals only hide off-screen elements once the engine has loaded.
+ *
+ * Also sets data-loading="on" on every hard load (motion on only), which shows
+ * the boot screen (Loader.astro) while the 3D builds: data-loading-kind="boot"
+ * on the first page of a visit, "resync" on reloads and later hard loads.
+ * Without JS the attribute never exists. A fail-safe removes it after 6 s.
+ */
+---
+
+<script is:inline>
+  (function () {
+    var d = document.documentElement;
+    var stored = null;
+    try {
+      stored = localStorage.getItem('cissa-motion');
+    } catch (e) {}
+    var off = stored === 'off' || (stored !== 'on' && matchMedia('(prefers-reduced-motion: reduce)').matches);
+    d.dataset.motion = off ? 'off' : 'on';
+    if (off) return;
+    var seen = false;
+    try {
+      seen = sessionStorage.getItem('cissa-booted') === '1';
+    } catch (e) {}
+    d.dataset.loading = 'on';
+    d.dataset.loadingKind = seen ? 'resync' : 'boot';
+    setTimeout(function () {
+      delete d.dataset.loading;
+    }, 6000);
+  })();
+</script>

@@ -1,0 +1,46 @@
+{
+  "$comment": "Site-wide copy. Everything visible in the navbar, the home hero, the closing call to action and the footer lives here. Links with href \"#\" show a 'coming soon' toast until the real page exists.",
+  "name": "CISSA",
+  "title": "What's in Product? · CISSA",
+  "description": "CISSA's product events: Product-thon, Design Blitz, Portfolio Impressions and Figma Workshops. Where ideas get validated, and creation happens.",
+  "joinUrl": "#",
+  "joinLabel": "Join CISSA",
+  "nav": [
+    { "label": "About", "href": "#" },
+    { "label": "Events", "href": "/#events" },
+    { "label": "Product", "href": "/", "current": true },
+    { "label": "Career Portal", "href": "#" }
+  ],
+  "hero": {
+    "kicker": "[ PRODUCTHON / WEEK 04 / WORKSHOPS ]",
+    "title": ["What's", "in"],
+    "outline": "Product",
+    "mark": "?",
+    "lead": "Where ideas get validated, and creation happens. Build like a product team.",
+    "primary": { "label": "Explore events", "href": "#events", "cursor": "Scroll" },
+    "secondary": { "label": "Meet the team", "href": "#", "cursor": "Soon" },
+    "cue": "Scroll to go in",
+    "hud": "> entering /events_"
+  },
+  "picker": {
+    "kicker": "[ 02 ] EXPLORE EVENTS",
+    "title": "Pick your",
+    "outline": "event",
+    "lead": "From a weekend of pitching to an afternoon in Figma, every event trains a different muscle of product thinking."
+  },
+  "cta": {
+    "kicker": "[ JOIN OUR EVENTS ]",
+    "title": "Ready to",
+    "outline": ["Build", "Something"],
+    "mark": "?",
+    "lead": "Become a CISSA member now and experience all our events.",
+    "physicsHint": "Grab one. Throw it."
+  },
+  "socials": [
+    { "label": "Instagram", "href": "#" },
+    { "label": "Discord", "href": "#" },
+    { "label": "LinkedIn", "href": "#" }
+  ],
+  "boot": ["boot cissa.product", "mount /events [4/4]", "compile shaders", "signal locked"],
+  "resync": ["re-sync signal"]
+}

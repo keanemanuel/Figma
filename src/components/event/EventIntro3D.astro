@@ -1,0 +1,45 @@
+---
+/**
+ * Event intro: a scroll-driven 3D scene, one per event (events.json `scene`,
+ * scripts/three/events/*). Hidden unless motion is on and WebGL works: the
+ * page body below is complete without it. The overlay tells the story in
+ * beats driven by --p (scroll progress, written by the scene):
+ *   intro title -> tagline -> description -> final title
+ */
+import { lineClass, type EventEntry } from '../../lib/content';
+
+interface Props {
+  event: EventEntry;
+}
+const { event: e } = Astro.props;
+---
+
+<section class="ev3d" data-gl="event" data-scene={e.scene} data-live-layout aria-hidden="true">
+  <div class="ev3d__stage" data-gl-stage>
+    <div class="ev3d__glow"></div>
+    <div class="ev3d__overlay">
+      <div class="ev3d__top">
+        <span class="kicker">{e.kicker}</span>
+        <span class="ev3d__slate" data-ev-slate>{e.slate}</span>
+      </div>
+      <div class="ev3d__title ev3d__title--intro">
+        <p class="display">{e.title.map((line, i) => <span class={lineClass(e, i)}>{line}</span>)}</p>
+      </div>
+      <p class="ev3d__beat ev3d__beat--1" data-label={`${e.number} / BRIEF`}>{e.tagline}</p>
+      <p class="ev3d__beat ev3d__beat--2" data-label={`${e.number} / README`}>{e.description}</p>
+      <div class="ev3d__title ev3d__title--final">
+        <p class="display">{e.title.map((line, i) => <span class={lineClass(e, i)}>{line}</span>)}</p>
+        <p>Keep scrolling ↓</p>
+      </div>
+      <div class="ev3d__bar">
+        <span>{e.number}</span>
+        <i></i>
+        <a href="#details" data-cursor="Skip">Skip intro ↓</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import '../../scripts/three/loader';
+</script>

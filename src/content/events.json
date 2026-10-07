@@ -1,0 +1,129 @@
+{
+  "$comment": "The four events, in order. `slug` is the URL (/events/<slug>). `theme` picks the colours (thon | blitz | folio | lab, see src/styles/tokens.css). `scene` picks the scroll-driven 3D intro (arcade | sprint | glance | canvas, see src/scripts/three/events). `title` lines build the big title; `outline` is the index of the line drawn as an outline (-1 for none); `serif` is the index of the line set in italic serif. `facts` are the Date / Venue / Entry row: replace the [PLACEHOLDER] values when they are confirmed. `registerUrl` \"#\" shows a 'coming soon' toast.",
+  "events": [
+    {
+      "id": "thon",
+      "slug": "product-thon",
+      "number": "01",
+      "theme": "thon",
+      "scene": "arcade",
+      "name": "Product-thon",
+      "orbit": "Product-thon",
+      "title": ["Product-", "thon"],
+      "outline": -1,
+      "serif": -1,
+      "kicker": "[ EVENT 01 ] HACKATHON × STRATEGY",
+      "slate": "INSERT COIN · 1UP",
+      "tags": ["Hackathon", "Product", "Paid Entry"],
+      "card": "Don't just build it — prove it. Define the problem, chase real user needs, and pitch it.",
+      "tagline": "Don't just build it. Prove it.",
+      "description": "Product-thon blends a hackathon with product strategy. You won't just build, you'll validate. Define the problem, explore what users actually need, shape a viable concept, then pitch it like it's going to market.",
+      "stepsStyle": "levels",
+      "steps": [
+        { "label": "LVL 1", "title": "Define the problem", "text": "Find a problem worth solving before writing a line.", "progress": 1 },
+        { "label": "LVL 2", "title": "Explore user needs", "text": "Talk to people and let evidence steer the concept.", "progress": 0.7 },
+        { "label": "LVL 3", "title": "Pitch it", "text": "Show creativity and real-world impact to the judges.", "progress": 0.35, "boss": true }
+      ],
+      "facts": [
+        { "label": "Date", "value": "[DATE]" },
+        { "label": "Venue", "value": "[VENUE]" },
+        { "label": "Entry", "value": "[PRICE]" }
+      ],
+      "cta": "Register interest",
+      "registerUrl": "#"
+    },
+    {
+      "id": "blitz",
+      "slug": "design-blitz",
+      "number": "02",
+      "theme": "blitz",
+      "scene": "sprint",
+      "name": "Design Blitz",
+      "orbit": "Design Blitz",
+      "title": ["Design", "Blitz"],
+      "outline": 1,
+      "serif": -1,
+      "kicker": "[ EVENT 02 ] UX/UI CHALLENGE",
+      "slate": "T-48:00:00",
+      "tags": ["Hackathon", "UX/UI", "Paid Entry"],
+      "card": "Research. Ideate. Prototype. From a blank canvas.",
+      "tagline": "Research. Ideate. Prototype. Against the clock.",
+      "description": "An intensive UX/UI challenge. Teams tackle a user-experience problem from scratch, moving through research, ideation and prototyping over a few days — and leave with something polished enough to show off.",
+      "stepsStyle": "phases",
+      "steps": [
+        { "label": "01", "title": "Research", "text": "Understand who you're designing for." },
+        { "label": "02", "title": "Ideate", "text": "Sketch wide, then commit to one direction." },
+        { "label": "03", "title": "Prototype", "text": "Make it clickable, make it beautiful.", "boss": true }
+      ],
+      "facts": [
+        { "label": "Date", "value": "[DATE]" },
+        { "label": "Team size", "value": "[TEAM SIZE]" },
+        { "label": "Entry", "value": "[PRICE]" }
+      ],
+      "cta": "Join the Blitz",
+      "registerUrl": "#"
+    },
+    {
+      "id": "folio",
+      "slug": "portfolio-impressions",
+      "number": "03",
+      "theme": "folio",
+      "scene": "glance",
+      "name": "Portfolio Impressions",
+      "orbit": "Portfolio",
+      "title": ["Portfolio", "impressions"],
+      "outline": -1,
+      "serif": 1,
+      "kicker": "[ EVENT 03 ] PORTFOLIO REVIEW",
+      "slate": "GLANCE 06.0s",
+      "tags": [],
+      "card": "You get seconds to make a first impression. Make them count.",
+      "tagline": "Recruiters skim. Land in the first glance.",
+      "description": "Recruiters skim. Your portfolio has to land in the first glance. Bring your work, get honest eyes on it, and leave knowing what to sharpen.",
+      "stepsStyle": "stages",
+      "steps": [
+        { "label": "01 — FIRST GLANCE", "title": "What lands instantly", "text": "See how your work reads before anyone scrolls.", "boss": true },
+        { "label": "02 — SECOND LOOK", "title": "Story over screenshots", "text": "Turn projects into case studies that show your thinking." },
+        { "label": "03 — LASTING IMPRESSION", "title": "Leave with a plan", "text": "Concrete fixes you can ship before the next application." }
+      ],
+      "facts": [
+        { "label": "Date", "value": "[DATE]" },
+        { "label": "Venue", "value": "[VENUE]" }
+      ],
+      "cta": "Book a review slot",
+      "registerUrl": "#"
+    },
+    {
+      "id": "lab",
+      "slug": "figma-workshops",
+      "number": "04",
+      "theme": "lab",
+      "scene": "canvas",
+      "name": "Figma Workshops",
+      "orbit": "Figma Lab",
+      "title": ["Figma", "Workshops"],
+      "outline": 1,
+      "serif": -1,
+      "kicker": "[ EVENT 04 ] HANDS-ON WORKSHOP",
+      "slate": "3 PEOPLE EDITING",
+      "tags": ["Workshop", "Hands-on"],
+      "card": "Laptops open, cursors live. Learn by building alongside people who use it daily.",
+      "tagline": "Laptops open. Cursors live.",
+      "description": "No slides-only sessions. Bring a laptop, follow along live, and walk out with a file you built yourself.",
+      "stepsStyle": "topics",
+      "steps": [
+        { "label": "01", "title": "Auto layout", "text": "" },
+        { "label": "02", "title": "Components & variants", "text": "" },
+        { "label": "03", "title": "Prototyping", "text": "" },
+        { "label": "04", "title": "Dev handoff", "text": "" }
+      ],
+      "facts": [
+        { "label": "Date", "value": "[DATE]" },
+        { "label": "Venue", "value": "[VENUE]" }
+      ],
+      "ticker": "BRING A LAPTOP · NO EXPERIENCE NEEDED · [DATE] / [VENUE]",
+      "cta": "Save your seat",
+      "registerUrl": "#"
+    }
+  ]
+}

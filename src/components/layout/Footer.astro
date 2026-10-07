@@ -1,0 +1,9 @@
+---
+import { site } from '../../lib/content';
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <span>© {year} {site.name}</span>
+  <button id="motion-toggle" type="button" hidden aria-pressed="true">Motion: <span data-motion-state>On</span></button>
+</footer>

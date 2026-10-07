@@ -1,0 +1,24 @@
+---
+/**
+ * "Coming soon" toast. Any link whose href is "#" (pages and forms that do not
+ * exist yet: About, Career Portal, Join, Register) shows it instead of jumping.
+ * TODO(backend): point those links at the real pages / sign-up forms.
+ */
+---
+
+<div class="toast" role="status" aria-live="polite" data-toast>Coming soon</div>
+
+<script>
+  let timer = 0;
+  document.addEventListener('click', (e) => {
+    const link = (e.target as Element | null)?.closest?.('a[href="#"]');
+    if (!link) return;
+    e.preventDefault();
+    const toast = document.querySelector<HTMLElement>('[data-toast]');
+    if (!toast) return;
+    toast.textContent = `${(link.textContent || '').replace('→', '').trim()}: coming soon`;
+    toast.classList.add('is-on');
+    clearTimeout(timer);
+    timer = window.setTimeout(() => toast.classList.remove('is-on'), 2200);
+  });
+</script>

@@ -1,0 +1,73 @@
+---
+/** The illustration from each event's Figma screen, rebuilt in HTML/CSS so it can move. Decoration. */
+import MCursor from '../ui/MCursor.astro';
+import type { EventEntry } from '../../lib/content';
+
+interface Props {
+  event: EventEntry;
+}
+const { event: e } = Astro.props;
+---
+
+{
+  e.id === 'thon' && (
+    <div class="console" data-tilt aria-hidden="true">
+      <div class="console__screen">
+        <div class="console__hud"><span>IDEAS 03</span><span>USERS 12</span><span>PITCH &gt;</span></div>
+        <p class="console__title">{e.name.toUpperCase()}</p>
+        <p class="console__press">PRESS START</p>
+        <i class="console__coin" />
+        <i class="console__player" />
+        <div class="console__ground" />
+      </div>
+      <div class="console__deck"><button type="button" tabindex="-1" /><button type="button" tabindex="-1" /><span>CISSA · PLAYER 1</span></div>
+    </div>
+  )
+}
+{
+  e.id === 'blitz' && (
+    <div class="stack" aria-hidden="true">
+      <span class="stack__num">{e.number}</span>
+      <div class="stack__note"><small>Research</small><b>“Users give up at step 3?”</b></div>
+      <div class="stack__wire"><small>Ideation</small><i /><i /><i /></div>
+      <div class="stack__proto"><small>Prototype</small><u /><i /><i /><i /><b>TRY IT</b></div>
+    </div>
+  )
+}
+{
+  e.id === 'folio' && (
+    <div class="fan" aria-hidden="true">
+      <span class="fan__label">FIRST GLANCE</span>
+      <div class="fan__side fan__side--l" />
+      <div class="fan__side fan__side--r" />
+      <div class="fan__card" data-tilt><small>Your name — product designer</small><u /><b>Case study 01</b><i /></div>
+      <div class="fan__brackets" />
+    </div>
+  )
+}
+{
+  e.id === 'lab' && (
+    <div class="editor" aria-hidden="true">
+      <div class="editor__bar"><i /><i /><i /><span>cissa-workshop.fig — 3 people editing</span></div>
+      <div class="editor__body">
+        <div class="editor__panel">
+          <small>LAYERS</small>
+          <ul><li>Event card</li><li class="is-on">Auto layout</li><li>Image</li><li>Title</li><li>Button / Primary</li></ul>
+        </div>
+        <div class="editor__canvas">
+          <div class="editor__card"><div class="editor__sel"><i /><i /><i /><i /></div><u /><b>EVENT CARD</b><span>REGISTER</span></div>
+          <MCursor who="you" label="You" />
+          <MCursor who="mentor" label="Mentor" />
+          <MCursor who="mate" label="Teammate" />
+        </div>
+        <div class="editor__panel">
+          <small>AUTO LAYOUT</small>
+          <div class="editor__props"><span>Vertical</span><span>Gap 14</span><span>Pad 22</span><span>R 20</span></div>
+          <small>FILL</small>
+          <p class="editor__fill" style="--f:#0b0c0e"><i />#0B0C0E</p>
+          <p class="editor__fill" style="--f:#5fe3e0"><i />#5FE3E0</p>
+        </div>
+      </div>
+    </div>
+  )
+}

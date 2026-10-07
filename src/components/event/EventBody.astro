@@ -1,0 +1,55 @@
+---
+/**
+ * One event page: the Figma screen for that event (intro, illustration, steps,
+ * facts, call to action). Layout differs per event through .ev--<id>
+ * (styles/event.css); the content all comes from events.json.
+ */
+import EventVisual from './EventVisual.astro';
+import { lineClass, type EventEntry } from '../../lib/content';
+
+interface Props {
+  event: EventEntry;
+}
+const { event: e } = Astro.props;
+---
+
+<section id="details" class:list={['ev', `ev--${e.id}`]} aria-labelledby="ev-title">
+  <div class="ev__glow"></div>
+  <div class="ev__top">
+    <div class="ev__intro">
+      <p class="kicker" data-reveal="decode">{e.kicker}</p>
+      <h1 id="ev-title" class="display" data-reveal="glitch" data-reveal-children data-reveal-stagger="0.12">
+        {e.title.map((line, i) => <span class={lineClass(e, i)}>{line}</span>)}
+      </h1>
+      {e.tags.length > 0 && <ul class="tags" data-reveal="fade-up" data-reveal-children>{e.tags.map((t) => <li class="tag">{t}</li>)}</ul>}
+      <p class="body-l" data-reveal="fade-up">{e.description}</p>
+    </div>
+    {e.id !== 'lab' && <div class="ev__visual" data-reveal="scan"><EventVisual event={e} /></div>}
+  </div>
+  {e.id === 'lab' && <div class="ev__visual" data-reveal="scan"><EventVisual event={e} /></div>}
+
+  <ol class:list={['ev__steps', `ev__steps--${e.stepsStyle}`]} data-reveal="fade-up" data-reveal-children data-reveal-stagger="0.1">
+    {
+      e.steps.map((s) => (
+        <li class:list={['step', { 'is-boss': s.boss }]}>
+          <span class="step__label">{s.label}</span>
+          <h3>{s.title}</h3>
+          {s.text && <p>{s.text}</p>}
+          {s.progress !== undefined && <div class="step__bar"><i style={`--v:${s.progress}`} /></div>}
+        </li>
+      ))
+    }
+  </ol>
+
+  <div class="ev__foot">
+    <dl class="ev__facts">{e.facts.map((f) => <div><dt>{f.label}</dt><dd>{f.value}</dd></div>)}</dl>
+    <a class="btn btn--md" href={e.registerUrl} data-magnetic data-cursor="Go"><span>{e.cta} <i class="arrow">→</i></span></a>
+  </div>
+</section>
+{
+  e.ticker && (
+    <div class="ticker" aria-label={e.ticker}>
+      <div class="ticker__track" aria-hidden="true">{Array.from({ length: 6 }, () => <span>{e.ticker} ·</span>)}</div>
+    </div>
+  )
+}

@@ -1,0 +1,216 @@
+/*
+ * Motion styles. Everything is gated on html[data-motion='on'] or on classes
+ * the motion scripts add, so with JS off or motion off the site is static and
+ * fully readable.
+ *
+ * House effect: the "projection". Things arrive as scanlines / blinds that
+ * thicken until solid, slightly split into two colour channels, then lock.
+ * In CSS that is a striped mask whose stripe height is one custom property.
+ */
+@property --blind { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
+@property --sweep { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+
+/* ---------- Reveals (scripts/motion/reveals.ts) ---------- */
+.reveal-scan {
+  -webkit-mask: linear-gradient(#000 var(--sc-h, 100%), transparent var(--sc-h, 100%)) 0 0 / 100% 6px;
+  mask: linear-gradient(#000 var(--sc-h, 100%), transparent var(--sc-h, 100%)) 0 0 / 100% 6px;
+  filter: drop-shadow(calc(var(--gl, 0) * 10px) 0 0 var(--c-split-a)) drop-shadow(calc(var(--gl, 0) * -10px) 0 0 var(--c-split-b));
+}
+.reveal-gl {
+  text-shadow: calc(var(--gl, 0) * 0.09em) 0 0 var(--c-split-a), calc(var(--gl, 0) * -0.09em) 0 0 var(--c-split-b);
+}
+
+/* ---------- Cursor: a multiplayer cursor with a name tag (scripts/motion/cursor.ts) ---------- */
+html.has-cursor,
+html.has-cursor a,
+html.has-cursor button,
+html.has-cursor summary,
+html.has-cursor label,
+html.has-cursor [data-drag] { cursor: none; }
+.cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 10001;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  --cc: var(--c-hot);
+}
+.cursor.is-visible { opacity: 1; }
+.cursor.is-field { opacity: 0; }
+.cursor svg { width: 20px; height: 22px; overflow: visible; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45)); transform-origin: 0 0; transition: transform 0.2s var(--ease-out); }
+.cursor svg path { fill: var(--cc); stroke: #fff; stroke-width: 1.2; stroke-linejoin: round; transition: fill 0.25s ease; }
+.cursor__tag {
+  position: absolute;
+  left: 16px;
+  top: 18px;
+  padding: 0.28em 0.75em;
+  border-radius: 999px;
+  background: var(--cc);
+  color: #fff;
+  font-family: var(--ff-body);
+  font-weight: 700;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  transform-origin: 0 0;
+  transition: background-color 0.25s ease, transform 0.25s var(--ease-out), padding 0.25s var(--ease-out);
+}
+.cursor.is-hover { --cc: var(--c-primary); }
+.cursor.is-hover .cursor__tag { color: var(--c-btn-text, #0b0c0e); transform: scale(1.18); padding-inline: 1em; }
+[data-theme='lab'] .cursor.is-hover .cursor__tag, .cursor[data-theme='lab'].is-hover .cursor__tag { color: #fff; }
+.cursor.is-down svg { transform: scale(0.8); }
+.cursor.is-down .cursor__tag { transform: scale(0.92); }
+.cursor.is-drag { --cc: var(--c-accent); }
+.cursor-trail {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  opacity: 0.85;
+}
+/* Sonar ping on every click / tap. */
+.ping {
+  position: fixed;
+  z-index: 9999;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.ping i {
+  position: absolute;
+  left: -40px;
+  top: -40px;
+  width: 80px;
+  height: 80px;
+  border: 1.5px solid var(--c-primary);
+  border-radius: 50%;
+  opacity: 0;
+  animation: ping 0.7s var(--ease-out) forwards;
+}
+.ping i:nth-child(2) { animation-delay: 0.1s; border-color: var(--c-accent); }
+.ping i:nth-child(3) { animation-delay: 0.2s; }
+@keyframes ping { from { transform: scale(0.1); opacity: 0.9; } to { transform: scale(1.5); opacity: 0; } }
+
+/* ---------- Boot screen (components/layout/Loader.astro) ----------
+ * Exists only while html[data-loading] is set (JS + motion on, hard loads).
+ * data-loading-kind: boot (first page of a visit) | resync (reloads).
+ */
+.loader { display: none; }
+html[data-loading] .loader {
+  position: fixed;
+  inset: 0 0 auto;
+  height: 100vh;
+  height: 100lvh;
+  z-index: 9990;
+  display: grid;
+  place-items: center;
+  background: #07080a;
+  color: #edeff2;
+  font-family: var(--ff-mono);
+  --c-primary: #00c3d0;
+  --c-accent: #8b7bff;
+}
+html[data-loading] body { overflow: hidden; }
+.loader__grid {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(0, 195, 208, 0.12) 1px, transparent 1px) 0 0 / 100% 37px,
+    linear-gradient(90deg, rgba(0, 195, 208, 0.12) 1px, transparent 1px) 0 0 / 37px 100%;
+  -webkit-mask: radial-gradient(ellipse at 50% 45%, #000 0, transparent 68%);
+  mask: radial-gradient(ellipse at 50% 45%, #000 0, transparent 68%);
+  animation: loader-grid 2.4s linear infinite;
+}
+@keyframes loader-grid { to { background-position: 0 37px, 37px 0; } }
+.loader__core { position: relative; display: grid; justify-items: center; gap: 1.5rem; width: min(86vw, 26rem); }
+.loader__radar { position: relative; width: min(46vmin, 220px); aspect-ratio: 1; display: grid; place-items: center; }
+.loader__radar i { position: absolute; inset: 0; border: 1px solid color-mix(in srgb, var(--c-primary) 55%, transparent); border-radius: 50%; animation: loader-ring 1.8s var(--ease-out) infinite; }
+.loader__radar i:nth-child(2) { animation-delay: 0.6s; }
+.loader__radar i:nth-child(3) { animation-delay: 1.2s; border-color: color-mix(in srgb, var(--c-accent) 60%, transparent); }
+@keyframes loader-ring { from { transform: scale(0.25); opacity: 1; } to { transform: scale(1.1); opacity: 0; } }
+/* The sweep: a radar hand made of scanlines. */
+.loader__sweep {
+  position: absolute;
+  inset: 6%;
+  border-radius: 50%;
+  background: conic-gradient(from var(--sweep), transparent 0 78%, color-mix(in srgb, var(--c-primary) 85%, transparent) 100%);
+  -webkit-mask: linear-gradient(#000 50%, transparent 50%) 0 0 / 100% 4px;
+  mask: linear-gradient(#000 50%, transparent 50%) 0 0 / 100% 4px;
+  animation: loader-sweep 1.2s linear infinite;
+}
+@keyframes loader-sweep { to { --sweep: 360deg; } }
+.loader__logo { position: relative; width: 34%; filter: drop-shadow(0 0 14px var(--c-primary)); animation: loader-flicker 2.2s steps(1) infinite; }
+@keyframes loader-flicker { 0%, 100% { opacity: 1; transform: none; } 46% { opacity: 0.5; transform: translateX(3px) skewX(-8deg); } 48% { opacity: 1; transform: translateX(-2px); } 50% { transform: none; } 82% { opacity: 0.7; } 84% { opacity: 1; } }
+.loader__log { width: 100%; min-height: 5.6em; font-size: 0.78rem; line-height: 1.4; letter-spacing: 0.06em; text-transform: uppercase; color: #7c838c; }
+.loader__log li::before { content: '> '; color: var(--c-primary); }
+.loader__log li.is-done { color: #edeff2; }
+.loader__log li.is-done::after { content: ' ✓'; color: var(--c-primary); }
+.loader__log li.is-typing::after { content: '▌'; color: var(--c-primary); animation: caret 0.6s steps(1) infinite; }
+@keyframes caret { 50% { opacity: 0; } }
+.loader__bar { width: 100%; height: 6px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+.loader__bar i { display: block; height: 100%; width: 100%; transform: scaleX(var(--v, 0)); transform-origin: left; background: repeating-linear-gradient(90deg, var(--c-primary) 0 8px, transparent 8px 10px); transition: transform 0.25s linear; }
+.loader__row { display: flex; justify-content: space-between; width: 100%; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: #7c838c; }
+.loader__pct { color: var(--c-primary); font-family: var(--ff-pixel); font-size: 0.7rem; }
+/* Leaves through opening blinds, with a short tear. */
+html[data-loading='out'] .loader {
+  pointer-events: none;
+  -webkit-mask: linear-gradient(#000 var(--blind), transparent var(--blind)) 0 0 / 100% 26px;
+  mask: linear-gradient(#000 var(--blind), transparent var(--blind)) 0 0 / 100% 26px;
+  animation: loader-out 0.75s cubic-bezier(0.6, 0, 0.3, 1) forwards, tear 0.3s steps(4) 1;
+}
+@keyframes loader-out { from { --blind: 100%; } to { --blind: 0%; } }
+@keyframes tear { 0% { transform: translateX(0); } 25% { transform: translateX(-14px) skewX(4deg); } 50% { transform: translateX(10px); } 75% { transform: translateX(-4px) skewX(-2deg); } 100% { transform: none; } }
+
+/* ---------- Page transition: the shutter ----------
+ * Blinds in the next page's colour close over the old page, hold while the
+ * next page (and its 3D) sets up, then open on the new page, which lands a few
+ * pixels out of place and snaps in. The plate only displays while
+ * html[data-nav] is set during a navigation (scripts/motion/index.ts).
+ */
+.vt-plate {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  place-items: center;
+  background: var(--c-btn);
+  color: var(--c-btn-text);
+  font-family: var(--ff-pixel);
+  font-size: clamp(0.7rem, 1.4vw, 1.1rem);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  view-transition-name: vt-plate;
+}
+html[data-nav] .vt-plate { display: grid; }
+html[data-motion='on']::view-transition-old(root) { animation: vt-old 1.3s steps(1) both; }
+html[data-motion='on']::view-transition-new(root) { animation: vt-new 1.3s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+html[data-motion='on']::view-transition-new(vt-plate) {
+  -webkit-mask: linear-gradient(#000 var(--blind), transparent var(--blind)) 0 0 / 100% 30px;
+  mask: linear-gradient(#000 var(--blind), transparent var(--blind)) 0 0 / 100% 30px;
+  animation: vt-plate 1.3s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+@keyframes vt-old { 0% { opacity: 1; transform: none; } 30% { transform: translateX(-10px) skewX(2deg); } 36% { transform: translateX(8px); } 42% { transform: none; } 50%, 100% { opacity: 0; } }
+@keyframes vt-new {
+  0%, 49% { opacity: 0; transform: translate(12px, -6px); }
+  50%, 62% { opacity: 1; transform: translate(12px, -6px); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes vt-plate { 0% { --blind: 0%; } 40%, 62% { --blind: 100%; } 100% { --blind: 0%; } }
+
+/* ---------- Kill switch ---------- */
+html[data-motion='off'] *,
+html[data-motion='off'] *::before,
+html[data-motion='off'] *::after { animation: none !important; transition: none !important; }
+html[data-motion='off']::view-transition-group(*),
+html[data-motion='off']::view-transition-old(*),
+html[data-motion='off']::view-transition-new(*) { animation: none !important; }
+html[data-motion='on'] .noise { animation: noise 1s steps(8) infinite; }
+@keyframes noise { 0% { transform: none; } 12% { transform: translate(-3%, -5%); } 25% { transform: translate(4%, 2%); } 37% { transform: translate(-6%, 4%); } 50% { transform: translate(2%, -6%); } 62% { transform: translate(-2%, 6%); } 75% { transform: translate(5%, -2%); } 87% { transform: translate(-5%, -3%); } }
+
+/* The picker re-inks its stage as the selection moves: fade, don't snap. */
+html[data-motion='on'] .picker__stage { transition: --c-primary 0.6s ease, --c-accent 0.6s ease, --c-glow 0.6s ease; }

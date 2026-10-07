@@ -1,0 +1,53 @@
+---
+/**
+ * Home hero. Static by default: the Figma hero with a CSS orb.
+ * With motion on and WebGL, scripts/three/loader.ts pins it and the orb is
+ * replaced by a hologram projector (scripts/three/heroScene.ts): a puck, a
+ * cone of light, a glass case with a hologram globe in it. Scrolling opens the
+ * case, holographic screens rise out of the beam, and the view pushes into
+ * the one that reads EVENTS: the events section follows straight after.
+ */
+import { site, events } from '../../lib/content';
+
+const h = site.hero;
+// Where each tag sits on the ring, degrees clockwise from the top (from Figma).
+const angles = [155, -115, -35, 70];
+---
+
+<section class="hero" data-gl="hero" data-live-layout>
+  <div class="hero__stage" data-gl-stage>
+    <div class="hero__glow"></div>
+    <div class="orb" data-orb aria-hidden="true">
+      <div class="orb__ring orb__ring--outer"></div>
+      <div class="orb__ring orb__ring--inner"></div>
+      <div class="orb__glow"></div>
+      <div class="orb__core"></div>
+      <div class="orb__orbit">
+        {events.map((e, i) => <span class="orb__tag" style={`--a:${angles[i % angles.length]}deg;--tc:${i % 2 ? '#c9c0ff' : '#5ee6dc'}`}>{e.number} {e.orbit}</span>)}
+      </div>
+    </div>
+
+    <div class="hero__copy">
+      <p class="kicker kicker--dot" data-reveal="decode">{h.kicker}</p>
+      <h1 class="display hero__title" data-reveal="glitch" data-reveal-children data-reveal-stagger="0.14">
+        {h.title.map((line) => <span>{line}</span>)}
+        <span><span class="outline">{h.outline}</span><span class="mark">{h.mark}</span></span>
+      </h1>
+      <p class="lead" data-reveal="fade-up" data-reveal-delay="0.5">{h.lead}</p>
+      <div class="hero__actions" data-reveal="fade-up" data-reveal-delay="0.65">
+        <a class="btn" href={h.primary.href} data-magnetic data-cursor={h.primary.cursor}><span>{h.primary.label} <i class="arrow">→</i></span></a>
+        <a class="btn btn--ghost" href={h.secondary.href} data-magnetic data-cursor={h.secondary.cursor}><span>{h.secondary.label} <i class="arrow">→</i></span></a>
+      </div>
+    </div>
+
+    <!-- Live overlay (motion on + WebGL): what the flight down the tunnel is heading for, then the hand-over to the events -->
+    <p class="hero__hud" aria-hidden="true">{h.hud}</p>
+    <div class="hero__flash" aria-hidden="true"></div>
+    <div class="hero__dark" aria-hidden="true"></div>
+    <p class="hero__cue" aria-hidden="true">{h.cue} <span>↓</span></p>
+  </div>
+</section>
+
+<script>
+  import '../../scripts/three/loader';
+</script>

@@ -1,0 +1,14 @@
+---
+/**
+ * Section divider drawn as a live signal. Static: a flat line. With motion on
+ * it idles as a waveform, bends toward the pointer or a finger, and spikes on
+ * fast scrolling (scripts/motion/signalRule.ts).
+ */
+---
+
+<div class="signal" data-signal aria-hidden="true">
+  <svg viewBox="0 0 1000 48" preserveAspectRatio="none" focusable="false">
+    <path class="signal__ghost" d="M0 24H1000"></path>
+    <path class="signal__main" d="M0 24H1000"></path>
+  </svg>
+</div>

@@ -1,0 +1,68 @@
+---
+import { ClientRouter } from 'astro:transitions';
+// Fonts from the Figma file, self-hosted (Latin subsets).
+import '@fontsource/michroma/latin-400.css';
+import '@fontsource/unbounded/latin-300.css';
+import '@fontsource/montserrat/latin-400.css';
+import '@fontsource/montserrat/latin-700.css';
+import '@fontsource/jetbrains-mono/latin-400.css';
+import '@fontsource/press-start-2p/latin-400.css';
+import '@fontsource/instrument-serif/latin-400-italic.css';
+import '@fontsource/caveat/latin-600.css';
+import '../styles/global.css';
+import MotionHead from '../components/layout/MotionHead.astro';
+import Navbar from '../components/layout/Navbar.astro';
+import Footer from '../components/layout/Footer.astro';
+import Toast from '../components/layout/Toast.astro';
+import Loader from '../components/layout/Loader.astro';
+import { site, type Theme } from '../lib/content';
+
+interface Props {
+  title?: string;
+  description?: string;
+  theme?: Theme;
+  /** Short name shown on the shutter while navigating to this page. */
+  plate?: string;
+}
+
+const { title = site.title, description = site.description, theme = 'base', plate = site.name } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const themeColour = { base: '#0b0c0e', thon: '#0b0c0e', blitz: '#0d0c18', folio: '#0b0c0e', lab: '#f4f4f2' }[theme];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content={themeColour} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <MotionHead />
+    <ClientRouter />
+  </head>
+  <body data-theme={theme}>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <div class="bg" aria-hidden="true"><div class="bg__grid"></div><div class="bg__hot"></div></div>
+    <div class="page">
+      <Navbar />
+      <main id="main">
+        <slot />
+      </main>
+      <Footer />
+    </div>
+    <Toast />
+    <div class="noise" aria-hidden="true"></div>
+    <div class="vt-plate" aria-hidden="true">&gt; load {plate}_</div>
+    <Loader />
+    <script>
+      import '../scripts/motion/index';
+    </script>
+  </body>
+</html>

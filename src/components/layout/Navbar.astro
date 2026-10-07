@@ -1,0 +1,17 @@
+---
+/** Fixed header. Hides on scroll down, returns on scroll up (scripts/motion/effects.ts). */
+import { site } from '../../lib/content';
+---
+
+<header class="nav" data-nav>
+  <a class="nav__brand" href="/" data-cursor="Home">
+    <img src="/logo.svg" alt="" width="44" height="42" />
+    <span>{site.name}</span>
+  </a>
+  <div class="nav__right">
+    <nav class="nav__links" aria-label="Main">
+      {site.nav.map((l) => <a href={l.href} aria-current={'current' in l && l.current ? 'page' : undefined}>{l.label}</a>)}
+    </nav>
+    <a class="btn btn--sm" href={site.joinUrl} data-magnetic data-cursor="Join"><span>{site.joinLabel} <i class="arrow">→</i></span></a>
+  </div>
+</header>

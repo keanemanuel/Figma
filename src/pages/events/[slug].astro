@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EventIntro3D from '../../components/event/EventIntro3D.astro';
+import EventBody from '../../components/event/EventBody.astro';
+import SignalRule from '../../components/ui/SignalRule.astro';
+import { events, eventHref, site, type EventEntry } from '../../lib/content';
+
+export function getStaticPaths() {
+  return events.map((event) => ({ params: { slug: event.slug }, props: { event } }));
+}
+
+interface Props {
+  event: EventEntry;
+}
+const { event } = Astro.props;
+const next = events[(events.indexOf(event) + 1) % events.length];
+---
+
+<BaseLayout title={`${event.name} · ${site.name}`} description={event.card} theme={event.theme} plate={event.name}>
+  <EventIntro3D event={event} />
+  <EventBody event={event} />
+  <SignalRule />
+  <section class="ev-next" data-theme={next.theme}>
+    <p class="kicker">[ NEXT EVENT {next.number} ]</p>
+    <a href={eventHref(next)} data-cursor="Next">{next.name} →</a>
+    <p><a class="kicker" href="/#events" data-cursor="Back" style="font-size:.8rem;-webkit-text-stroke:0;color:var(--c-dim)">← All events</a></p>
+  </section>
+</BaseLayout>
